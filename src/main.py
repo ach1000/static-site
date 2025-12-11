@@ -1,4 +1,4 @@
-from textnode import TextNode, TextNodeType
+from textnode import TextNode, TextType
 
 def main():
     text_node = TextNode("Hello, World!", TextNodeType.PLAIN_TEXT)
