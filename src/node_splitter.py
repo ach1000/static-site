@@ -1,5 +1,16 @@
+from enum import Enum
 from textnode import TextNode, TextType
 from markdown_extractor import extract_markdown_images, extract_markdown_links
+
+
+class BlockType(Enum):
+    """Enum for markdown block types."""
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -163,3 +174,73 @@ def markdown_to_blocks(markdown):
     
     # Strip each block and filter out empty ones
     return [block.strip() for block in blocks if block.strip()]
+
+
+def block_to_block_type(block):
+    """
+    Determine the type of a markdown block.
+    
+    Args:
+        block: A single block of markdown text (whitespace already stripped)
+    
+    Returns:
+        BlockType enum value representing the type of block
+    """
+    lines = block.split("\n")
+    
+    # Check for heading: 1-6 # followed by space
+    if lines[0].startswith("#"):
+        hashes = 0
+        for char in lines[0]:
+            if char == "#":
+                hashes += 1
+            else:
+                break
+        if 1 <= hashes <= 6 and (hashes < len(lines[0]) and lines[0][hashes] == " "):
+            return BlockType.HEADING
+    
+    # Check for code block: starts and ends with 3 backticks
+    if block.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
+    
+    # Check for quote: every line starts with >
+    if all(line.startswith(">") for line in lines):
+        return BlockType.QUOTE
+    
+    # Check for unordered list: every line starts with - followed by space
+    if all(line.startswith("- ") for line in lines):
+        return BlockType.UNORDERED_LIST
+    
+    # Check for ordered list: every line starts with number. space, incrementing from 1
+    is_ordered_list = True
+    for i, line in enumerate(lines, 1):
+        # Check if line starts with number
+        if not line or not line[0].isdigit():
+            is_ordered_list = False
+            break
+        # Extract the number
+        num_str = ""
+        for char in line:
+            if char.isdigit():
+                num_str += char
+            else:
+                break
+        try:
+            num = int(num_str)
+            # Check if number matches expected sequence (1, 2, 3, ...)
+            if num != i:
+                is_ordered_list = False
+                break
+            # Check if followed by . and space
+            if not (len(line) > len(num_str) and line[len(num_str)] == "." and line[len(num_str) + 1] == " "):
+                is_ordered_list = False
+                break
+        except (ValueError, IndexError):
+            is_ordered_list = False
+            break
+    
+    if is_ordered_list:
+        return BlockType.ORDERED_LIST
+    
+    # Default to paragraph
+    return BlockType.PARAGRAPH
