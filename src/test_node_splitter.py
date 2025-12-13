@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from node_splitter import split_nodes_delimiter
+from node_splitter import split_nodes_delimiter, markdown_to_blocks
 
 
 class TestNodeSplitter(unittest.TestCase):
@@ -55,6 +55,65 @@ class TestNodeSplitter(unittest.TestCase):
         types = [n.text_type for n in nodes]
         self.assertIn("a", texts)
         self.assertIn("B", texts)
+
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_markdown_to_blocks_empty_document(self):
+        md = ""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_single_newline(self):
+        md = "\n"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_complex(self):
+        md = """# Heading 1
+
+This is a paragraph with **bold** and _italic_.
+
+## Heading 2
+
+Another paragraph here.
+
+```
+code block
+with multiple lines
+```
+
+Final paragraph with a [link](https://example.com).
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "# Heading 1",
+                "This is a paragraph with **bold** and _italic_.",
+                "## Heading 2",
+                "Another paragraph here.",
+                "```\ncode block\nwith multiple lines\n```",
+                "Final paragraph with a [link](https://example.com).",
+            ],
+        )
 
 
 if __name__ == "__main__":
