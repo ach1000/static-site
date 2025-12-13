@@ -1,6 +1,8 @@
 from enum import Enum
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, text_node_to_html_node
 from markdown_extractor import extract_markdown_images, extract_markdown_links
+from parentnode import ParentNode
+from leafnode import LeafNode
 
 
 class BlockType(Enum):
@@ -244,3 +246,94 @@ def block_to_block_type(block):
     
     # Default to paragraph
     return BlockType.PARAGRAPH
+
+
+def text_to_children(text):
+    """
+    Convert inline markdown text to a list of HTMLNode children.
+    
+    Uses text_to_textnodes to parse inline markdown and text_node_to_html_node
+    to convert each TextNode to an HTMLNode.
+    """
+    text_nodes = text_to_textnodes(text)
+    return [text_node_to_html_node(node) for node in text_nodes]
+
+
+def markdown_to_html_node(markdown):
+    """
+    Convert a full markdown document to a single parent HTMLNode.
+    
+    The parent node is a div containing all block-level HTMLNodes.
+    """
+    blocks = markdown_to_blocks(markdown)
+    children = []
+    
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        
+        if block_type == BlockType.PARAGRAPH:
+            # Paragraph: normalize newlines to spaces and parse inline markdown
+            normalized_block = " ".join(block.split())
+            children_nodes = text_to_children(normalized_block)
+            children.append(ParentNode("p", children_nodes))
+        
+        elif block_type == BlockType.HEADING:
+            # Heading: extract level and content
+            level = 0
+            for char in block:
+                if char == "#":
+                    level += 1
+                else:
+                    break
+            # Content is after the hashes and space
+            content = block[level + 1:]
+            children_nodes = text_to_children(content)
+            children.append(ParentNode(f"h{level}", children_nodes))
+        
+        elif block_type == BlockType.CODE:
+            # Code block: don't parse inline markdown
+            # Remove the triple backticks
+            code_content = block[3:-3]
+            # Strip leading newline if present
+            if code_content.startswith("\n"):
+                code_content = code_content[1:]
+            children.append(ParentNode("pre", [ParentNode("code", [LeafNode(None, code_content)])]))
+        
+        elif block_type == BlockType.QUOTE:
+            # Quote: process each line (remove > prefix) and parse inline markdown
+            lines = block.split("\n")
+            quote_lines = []
+            for line in lines:
+                # Remove leading > and space
+                if line.startswith("> "):
+                    quote_lines.append(line[2:])
+                elif line.startswith(">"):
+                    quote_lines.append(line[1:])
+            quote_text = "\n".join(quote_lines)
+            children_nodes = text_to_children(quote_text)
+            children.append(ParentNode("blockquote", children_nodes))
+        
+        elif block_type == BlockType.UNORDERED_LIST:
+            # Unordered list: process each line (remove - prefix) and parse inline markdown
+            lines = block.split("\n")
+            list_items = []
+            for line in lines:
+                # Remove leading "- "
+                item_content = line[2:]
+                children_nodes = text_to_children(item_content)
+                list_items.append(ParentNode("li", children_nodes))
+            children.append(ParentNode("ul", list_items))
+        
+        elif block_type == BlockType.ORDERED_LIST:
+            # Ordered list: process each line (remove number. prefix) and parse inline markdown
+            lines = block.split("\n")
+            list_items = []
+            for line in lines:
+                # Find where the text starts (after "N. ")
+                dot_idx = line.index(".")
+                item_content = line[dot_idx + 2:]
+                children_nodes = text_to_children(item_content)
+                list_items.append(ParentNode("li", children_nodes))
+            children.append(ParentNode("ol", list_items))
+    
+    return ParentNode("div", children)
