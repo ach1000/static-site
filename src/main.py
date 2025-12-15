@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+from generate_page import generate_page
 
 
 def copy_dir_recursive(src, dst):
@@ -13,10 +14,19 @@ def copy_dir_recursive(src, dst):
 
     # Remove destination if it exists to ensure a clean copy
     if os.path.exists(dst):
-        if os.path.isfile(dst):
-            os.remove(dst)
-        else:
-            shutil.rmtree(dst)
+        try:
+            if os.path.isfile(dst):
+                os.remove(dst)
+            else:
+                shutil.rmtree(dst)
+        except Exception as e:
+            print(f"Warning: Could not remove {dst}: {e}")
+            import time
+            time.sleep(0.1)
+            try:
+                shutil.rmtree(dst, ignore_errors=True)
+            except:
+                pass
 
     os.makedirs(dst, exist_ok=True)
 
@@ -28,8 +38,11 @@ def copy_dir_recursive(src, dst):
             os.makedirs(path_dst, exist_ok=True)
             copy_dir_recursive(path_src, path_dst)
         elif os.path.isfile(path_src):
-            shutil.copy2(path_src, path_dst)
-            print(f"Copied file: {path_dst}")
+            try:
+                shutil.copy(path_src, path_dst)
+                print(f"Copied file: {path_dst}")
+            except Exception as e:
+                print(f"Error copying {path_src}: {e}")
 
 
 def main():
@@ -37,12 +50,20 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     static_dir = os.path.join(project_root, "static")
     public_dir = os.path.join(project_root, "public")
+    template_path = os.path.join(project_root, "template.html")
+    content_path = os.path.join(project_root, "content", "index.md")
+    dest_path = os.path.join(public_dir, "index.html")
 
     try:
+        # Copy static files to public directory
         copy_dir_recursive(static_dir, public_dir)
-        print(f"Static site copied from {static_dir} -> {public_dir}")
+        print(f"Static files copied to {public_dir}")
+        
+        # Generate the index page from markdown
+        generate_page(content_path, template_path, dest_path)
+        print(f"Page generated successfully at {dest_path}")
     except Exception as e:
-        print(f"Error copying site: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
