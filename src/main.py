@@ -46,21 +46,26 @@ def copy_dir_recursive(src, dst):
 
 
 def main():
+    # Get basepath from CLI arguments, default to /
+    basepath = "/"
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    
     # Determine project root (parent of src/)
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     static_dir = os.path.join(project_root, "static")
-    public_dir = os.path.join(project_root, "public")
+    docs_dir = os.path.join(project_root, "docs")
     template_path = os.path.join(project_root, "template.html")
     content_dir = os.path.join(project_root, "content")
 
     try:
-        # Copy static files to public directory
-        copy_dir_recursive(static_dir, public_dir)
-        print(f"Static files copied to {public_dir}")
+        # Copy static files to docs directory
+        copy_dir_recursive(static_dir, docs_dir)
+        print(f"Static files copied to {docs_dir}")
         
         # Generate all pages from content directory
-        generate_pages_recursive(content_dir, template_path, public_dir)
-        print(f"All pages generated successfully in {public_dir}")
+        generate_pages_recursive(content_dir, template_path, docs_dir, basepath)
+        print(f"All pages generated successfully in {docs_dir}")
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
