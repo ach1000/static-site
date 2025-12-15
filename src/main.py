@@ -50,6 +50,14 @@ def main():
     basepath = "/"
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
+
+    # Normalize basepath: ensure it starts and ends with a slash,
+    # but keep root "/" as-is.
+    if basepath != "/":
+        if not basepath.startswith("/"):
+            basepath = "/" + basepath
+        if not basepath.endswith("/"):
+            basepath = basepath + "/"
     
     # Determine project root (parent of src/)
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
