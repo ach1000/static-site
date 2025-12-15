@@ -51,13 +51,19 @@ def main():
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
 
-    # Normalize basepath: ensure it starts and ends with a slash,
-    # but keep root "/" as-is.
+    # Normalize basepath: ensure it starts and ends with a slash for
+    # path-style basepaths (e.g. "mysite" -> "/mysite/") but do NOT
+    # prepend a slash for full URLs (e.g. "https://..." should remain
+    # as-is, only ensure a trailing slash).
     if basepath != "/":
-        if not basepath.startswith("/"):
-            basepath = "/" + basepath
-        if not basepath.endswith("/"):
-            basepath = basepath + "/"
+        if basepath.startswith("http://") or basepath.startswith("https://"):
+            if not basepath.endswith("/"):
+                basepath = basepath + "/"
+        else:
+            if not basepath.startswith("/"):
+                basepath = "/" + basepath
+            if not basepath.endswith("/"):
+                basepath = basepath + "/"
     
     # Determine project root (parent of src/)
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
