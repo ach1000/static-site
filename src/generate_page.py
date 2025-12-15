@@ -40,3 +40,40 @@ def generate_page(from_path, template_path, dest_path):
     # Write the final HTML to the destination
     with open(dest_path, 'w') as f:
         f.write(final_html)
+
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    """Recursively generate HTML pages from all markdown files in content directory.
+    
+    Crawls the content directory structure and generates corresponding HTML files
+    in the destination directory, maintaining the same directory structure.
+    
+    Args:
+        dir_path_content: Root path to the content directory (containing markdown files).
+        template_path: Path to the HTML template file.
+        dest_dir_path: Root path where generated HTML files should be written.
+    """
+    # Iterate through all entries in the content directory
+    for entry in os.listdir(dir_path_content):
+        entry_path = os.path.join(dir_path_content, entry)
+        
+        if os.path.isfile(entry_path):
+            # If it's a markdown file, generate an HTML page for it
+            if entry.endswith('.md'):
+                # Create the corresponding output path
+                html_filename = entry.replace('.md', '.html')
+                dest_path = os.path.join(dest_dir_path, html_filename)
+                
+                # Generate the HTML page
+                generate_page(entry_path, template_path, dest_path)
+        
+        elif os.path.isdir(entry_path):
+            # If it's a directory, recursively process it
+            dest_subdir = os.path.join(dest_dir_path, entry)
+            
+            # Create the destination subdirectory if it doesn't exist
+            if not os.path.exists(dest_subdir):
+                os.makedirs(dest_subdir)
+            
+            # Recursively generate pages in the subdirectory
+            generate_pages_recursive(entry_path, template_path, dest_subdir)

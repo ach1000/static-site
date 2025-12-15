@@ -1,7 +1,7 @@
 import os
 import shutil
 import sys
-from generate_page import generate_page
+from generate_page import generate_pages_recursive
 
 
 def copy_dir_recursive(src, dst):
@@ -51,17 +51,16 @@ def main():
     static_dir = os.path.join(project_root, "static")
     public_dir = os.path.join(project_root, "public")
     template_path = os.path.join(project_root, "template.html")
-    content_path = os.path.join(project_root, "content", "index.md")
-    dest_path = os.path.join(public_dir, "index.html")
+    content_dir = os.path.join(project_root, "content")
 
     try:
         # Copy static files to public directory
         copy_dir_recursive(static_dir, public_dir)
         print(f"Static files copied to {public_dir}")
         
-        # Generate the index page from markdown
-        generate_page(content_path, template_path, dest_path)
-        print(f"Page generated successfully at {dest_path}")
+        # Generate all pages from content directory
+        generate_pages_recursive(content_dir, template_path, public_dir)
+        print(f"All pages generated successfully in {public_dir}")
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
