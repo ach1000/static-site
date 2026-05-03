@@ -23,7 +23,7 @@ static-site/
 ├── .gitignore               # Ignores __pycache__/
 ├── main.sh                  # Runs `python3 src/main.py`
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
-├── Makefile                 # `make run` / `make test`
+├── Makefile                 # `make run` / `make test` / `make clean`
 └── PROJECT.md                # This file
 ```
 
@@ -32,7 +32,10 @@ static-site/
 ```bash
 ./main.sh   # or: make run
 ./test.sh   # or: make test
+make clean  # removes generated site output and Python __pycache__ folders
 ```
+
+`main.sh` now changes into the repository root before running `python3 src/main.py`, so it can be invoked from outside the project root.
 
 ## Unit Tests — `src/test_textnode.py`
 
@@ -102,7 +105,6 @@ Intermediate representation of a piece of inline text.
 - As of the end of this session, `make test` runs 83 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
-
 Represents a node in an HTML document tree. All constructor arguments are optional (default `None`):
 
 | Property   | Type              | Description                                      |
@@ -175,6 +177,12 @@ Also in `src/converters.py`:
 	- quote -> `blockquote`
 	- unordered list -> `ul > li`
 	- ordered list -> `ol > li`
+
+## Static Asset Copying — `src/main.py`
+
+- `copy_static_to_public()` builds repo-root-relative paths, verifies required assets exist (`static/index.css` and `static/images/tolkien.png`), deletes `public/` if it exists, and recursively copies all static files/directories.
+- `copy_dir_recursive(src, dst)` handles nested directory traversal and logs each copied file path.
+- `public/` is git-ignored as generated output.
 
 ## split_nodes_delimiter — `src/inline_markdown.py`
 
