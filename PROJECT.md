@@ -13,7 +13,9 @@ static-site/
 ├── src/
 │   ├── main.py              # Entry point; run via main.sh or `make run`
 │   ├── textnode.py          # Inline text representation (TextNode + TextType)
-│   └── test_textnode.py     # Unit tests for TextNode
+│   ├── htmlnode.py          # HTML node representation (HTMLNode)
+│   ├── test_textnode.py     # Unit tests for TextNode
+│   └── test_htmlnode.py     # Unit tests for HTMLNode
 ├── .gitignore               # Ignores __pycache__/
 ├── main.sh                  # Runs `python3 src/main.py`
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
@@ -92,3 +94,21 @@ Intermediate representation of a piece of inline text.
 - `src/main.py` imports from `textnode` using a bare module name; Python must be invoked from within the `src/` directory, or the script must be run via `main.sh` / `make run` (both of which call `python3 src/main.py` from the project root, which adds `src/` to `sys.path` implicitly via the working directory).
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
+
+## HTMLNode — `src/htmlnode.py`
+
+Represents a node in an HTML document tree. All constructor arguments are optional (default `None`):
+
+| Property   | Type              | Description                                      |
+|------------|-------------------|--------------------------------------------------|
+| `tag`      | `str|None`        | HTML tag name, e.g. `"p"`, `"a"`, `"h1"`        |
+| `value`    | `str|None`        | Text content of the tag                          |
+| `children` | `list[HTMLNode]|None` | Child nodes                                 |
+| `props`    | `dict|None`       | HTML attributes, e.g. `{"href": "https://..."}` |
+
+**Methods:**
+- `to_html()` — raises `NotImplementedError`; child classes must override
+- `props_to_html()` — returns attributes as a string with leading spaces, e.g. ` href="..." target="_blank"`; returns `""` if `props` is `None` or empty
+- `__repr__()` — returns `HTMLNode(tag, value, children, props)`
+
+`HTMLNode` is a base class. Concrete subclasses will override `to_html()` to render HTML.
