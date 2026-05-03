@@ -112,3 +112,18 @@ Represents a node in an HTML document tree. All constructor arguments are option
 - `__repr__()` — returns `HTMLNode(tag, value, children, props)`
 
 `HTMLNode` is a base class. Concrete subclasses will override `to_html()` to render HTML.
+
+## LeafNode — `src/htmlnode.py`
+
+A subclass of `HTMLNode` representing an HTML tag with no children (a leaf in the tree).
+
+**Constructor:** `LeafNode(tag, value, props=None)`
+- `tag` and `value` are required positional arguments (though `tag` may be `None`)
+- `children` is always `None` (not accepted)
+
+**`to_html()` behaviour:**
+- Raises `ValueError` if `value` is `None`
+- Returns raw text if `tag` is `None`
+- Otherwise returns `<tag props>value</tag>`, e.g. `<a href="...">Click me!</a>`
+
+**`__repr__()`** returns `LeafNode(tag, value, props)` (no children field).
