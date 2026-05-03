@@ -19,11 +19,15 @@ static-site/
 │   ├── test_textnode.py     # Unit tests for TextNode
 │   ├── test_htmlnode.py     # Unit tests for HTMLNode / LeafNode / ParentNode
 │   ├── test_converters.py   # Unit tests for text_node_to_html_node
-│   └── test_inline_markdown.py # Unit tests for split_nodes_delimiter
+│   ├── test_inline_markdown.py # Unit tests for split_nodes_delimiter
+│   └── test_main.py         # Unit tests for extract_title and generate_page
 ├── .gitignore               # Ignores __pycache__/
 ├── main.sh                  # Runs `python3 src/main.py`
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
 ├── Makefile                 # `make run` / `make test` / `make clean`
+├── template.html            # Page template containing {{ Title }} and {{ Content }}
+├── content/
+│   └── index.md             # Markdown source for main page
 └── MEMORY.md                # This file
 ```
 
@@ -102,7 +106,7 @@ Intermediate representation of a piece of inline text.
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 83 tests, all passing.
+- As of the end of this session, `make test` runs 87 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 Represents a node in an HTML document tree. All constructor arguments are optional (default `None`):
@@ -183,6 +187,13 @@ Also in `src/converters.py`:
 - `copy_static_to_public()` builds repo-root-relative paths, verifies required assets exist (`static/index.css` and `static/images/tolkien.png`), deletes `public/` if it exists, and recursively copies all static files/directories.
 - `copy_dir_recursive(src, dst)` handles nested directory traversal and logs each copied file path.
 - `public/` is git-ignored as generated output.
+
+Also in `src/main.py`:
+- `extract_title(markdown)` returns the first h1 (`# `) title text and raises `ValueError` if none exists.
+- `generate_page(from_path, template_path, dest_path)` converts markdown to HTML using `markdown_to_html_node`, injects values into `template.html` placeholders, and writes output HTML, creating destination directories as needed.
+- `main()` now copies static assets and generates `public/index.html` from `content/index.md` and `template.html`.
+
+`main.sh` now runs the generator and then starts a local server with `cd public && python3 -m http.server 8888`.
 
 ## split_nodes_delimiter — `src/inline_markdown.py`
 
