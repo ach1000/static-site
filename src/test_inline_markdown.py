@@ -1,6 +1,8 @@
 import unittest
 
 from inline_markdown import (
+    BlockType,
+    block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
@@ -328,6 +330,42 @@ This is the same paragraph on a new line
 
     def test_markdown_to_blocks_empty_input(self):
         self.assertEqual(markdown_to_blocks("   \n\n   \n"), [])
+
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_block_to_block_type_heading(self):
+        self.assertEqual(block_to_block_type("### A heading"), BlockType.HEADING)
+
+    def test_block_to_block_type_heading_requires_space(self):
+        self.assertEqual(block_to_block_type("##No space"), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_code(self):
+        block = "```\nprint('hello')\n```"
+        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+
+    def test_block_to_block_type_quote(self):
+        block = ">this is quote line one\n> this is quote line two"
+        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+
+    def test_block_to_block_type_unordered_list(self):
+        block = "- one\n- two\n- three"
+        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED_LIST)
+
+    def test_block_to_block_type_ordered_list(self):
+        block = "1. one\n2. two\n3. three"
+        self.assertEqual(block_to_block_type(block), BlockType.ORDERED_LIST)
+
+    def test_block_to_block_type_ordered_list_must_increment(self):
+        block = "1. one\n3. three"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_ordered_list_must_start_at_one(self):
+        block = "2. two\n3. three"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_paragraph(self):
+        block = "This is just a regular paragraph\nwith multiple lines."
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
 
 
 if __name__ == "__main__":

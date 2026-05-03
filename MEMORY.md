@@ -99,7 +99,7 @@ Intermediate representation of a piece of inline text.
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 68 tests, all passing.
+- As of the end of this session, `make test` runs 77 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 
@@ -185,3 +185,5 @@ Also in `src/inline_markdown.py`:
 - `split_nodes_link(old_nodes)` splits only `TextType.TEXT` nodes into a sequence of `TextType.TEXT` and `TextType.LINK` nodes.
 - `text_to_textnodes(text)` converts raw inline markdown text into `TextNode` objects by chaining the splitters in order: images, links, code, bold, italic.
 - `markdown_to_blocks(markdown)` splits a full markdown document into block strings by double newlines, strips each block, and removes empty blocks.
+- `BlockType` enum classifies block markdown into paragraph, heading, code, quote, unordered_list, and ordered_list.
+- `block_to_block_type(block)` detects the block type using markdown syntax rules (heading markers, fenced code, quote/list line prefixes, and ordered list sequence validation).
