@@ -96,6 +96,8 @@ Intermediate representation of a piece of inline text.
 - `src/main.py` imports from `textnode` using a bare module name; Python must be invoked from within the `src/` directory, or the script must be run via `main.sh` / `make run` (both of which call `python3 src/main.py` from the project root, which adds `src/` to `sys.path` implicitly via the working directory).
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
+- The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
+- As of the end of this session, `make test` runs 39 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 
