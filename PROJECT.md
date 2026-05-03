@@ -15,9 +15,11 @@ static-site/
 │   ├── textnode.py          # Inline text representation (TextNode + TextType)
 │   ├── htmlnode.py          # HTML node representation (HTMLNode, LeafNode, ParentNode)
 │   ├── converters.py        # text_node_to_html_node() conversion function
+│   ├── inline_markdown.py   # split_nodes_delimiter() for inline markdown parsing
 │   ├── test_textnode.py     # Unit tests for TextNode
 │   ├── test_htmlnode.py     # Unit tests for HTMLNode / LeafNode / ParentNode
-│   └── test_converters.py   # Unit tests for text_node_to_html_node
+│   ├── test_converters.py   # Unit tests for text_node_to_html_node
+│   └── test_inline_markdown.py # Unit tests for split_nodes_delimiter
 ├── .gitignore               # Ignores __pycache__/
 ├── main.sh                  # Runs `python3 src/main.py`
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
@@ -97,7 +99,7 @@ Intermediate representation of a piece of inline text.
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 39 tests, all passing.
+- As of the end of this session, `make test` runs 46 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 
@@ -163,3 +165,15 @@ Converts a `TextNode` to a `LeafNode`. Raises `ValueError` for unknown `TextType
 | IMAGE     | `"img"`     | `""`         | `{"src": url, "alt": text}`    |
 
 Note: `LeafNode` renders images as `<img src="..." alt="..."></img>` (not self-closing) since `to_html()` always wraps value in open/close tags.
+
+## split_nodes_delimiter — `src/inline_markdown.py`
+
+`split_nodes_delimiter(old_nodes, delimiter, text_type)` transforms a list of `TextNode`s by splitting only `TextType.TEXT` nodes on an inline markdown delimiter.
+
+Behavior:
+- Non-`TEXT` nodes are passed through unchanged.
+- `TEXT` nodes without the delimiter are passed through unchanged.
+- Delimited segments alternate between plain `TextType.TEXT` and the provided `text_type`.
+- Raises `ValueError` if a closing delimiter is missing (invalid markdown syntax).
+
+This is the shared parser primitive for inline code, bold, and italic handling by varying only `delimiter` and `text_type`.
