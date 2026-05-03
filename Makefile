@@ -1,4 +1,4 @@
-.PHONY: run test clean
+.PHONY: run test clean build
 
 run:
 	./main.sh
@@ -6,6 +6,9 @@ run:
 test:
 	./test.sh
 
+build:
+	./build.sh
+
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
-	rm -rf public
+	rm -rf docs
