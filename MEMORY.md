@@ -20,9 +20,9 @@ static-site/
 │   ├── test_htmlnode.py     # Unit tests for HTMLNode / LeafNode / ParentNode
 │   ├── test_converters.py   # Unit tests for text_node_to_html_node
 │   ├── test_inline_markdown.py # Unit tests for split_nodes_delimiter
-│   └── test_main.py         # Unit tests for extract_title and generate_page
-├── .gitignore               # Ignores __pycache__/
-├── main.sh                  # Runs `python3 src/main.py`
+│   └── test_main.py         # Unit tests for extract_title, generate_page, and recursive generation
+├── .gitignore               # Ignores __pycache__/ and public/
+├── main.sh                  # Generates site then serves `public/` on port 8888
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
 ├── Makefile                 # `make run` / `make test` / `make clean`
 ├── template.html            # Page template containing {{ Title }} and {{ Content }}
@@ -75,7 +75,7 @@ Tests are methods on `TestTextNode(unittest.TestCase)`. Current coverage:
 Markdown content is split into two levels:
 
 - **Inline** — text within a block (implemented in `textnode.py`)
-- **Block** — headings, paragraphs, bullet lists (not yet implemented)
+- **Block** — headings, paragraphs, code blocks, quotes, and lists (implemented in `inline_markdown.py` + `converters.py`)
 
 ### TextType (enum) — `src/textnode.py`
 
@@ -110,9 +110,8 @@ Intermediate representation of a piece of inline text.
 
 - `src/main.py` imports from `textnode` using a bare module name; Python must be invoked from within the `src/` directory, or the script must be run via `main.sh` / `make run` (both of which call `python3 src/main.py` from the project root, which adds `src/` to `sys.path` implicitly via the working directory).
 - `__pycache__/` is git-ignored.
-- Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 87 tests, all passing.
+- As of the end of this session, `make test` runs 88 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 Represents a node in an HTML document tree. All constructor arguments are optional (default `None`):
@@ -198,9 +197,8 @@ Also in `src/converters.py`:
 Also in `src/main.py`:
 - `extract_title(markdown)` returns the first h1 (`# `) title text and raises `ValueError` if none exists.
 - `generate_page(from_path, template_path, dest_path)` converts markdown to HTML using `markdown_to_html_node`, injects values into `template.html` placeholders, and writes output HTML, creating destination directories as needed.
-- `main()` now copies static assets and generates `public/index.html` from `content/index.md` and `template.html`.
-
-Note: Additional markdown pages under `content/blog/*/index.md` and `content/contact/index.md` are present, but current `main()` only generates the home page (`public/index.html`).
+- `generate_pages_recursive(dir_path_content, template_path, dest_dir_path)` recursively crawls the content directory and generates `.html` pages for every `.md` file, preserving directory structure under `public/`.
+- `main()` now copies static assets and generates pages recursively for all markdown under `content/`.
 
 `main.sh` now runs the generator and then starts a local server with `cd public && python3 -m http.server 8888`.
 
