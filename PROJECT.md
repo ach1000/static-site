@@ -99,7 +99,7 @@ Intermediate representation of a piece of inline text.
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 77 tests, all passing.
+- As of the end of this session, `make test` runs 83 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 
@@ -165,6 +165,16 @@ Converts a `TextNode` to a `LeafNode`. Raises `ValueError` for unknown `TextType
 | IMAGE     | `"img"`     | `""`         | `{"src": url, "alt": text}`    |
 
 Note: `LeafNode` renders images as `<img src="..." alt="..."></img>` (not self-closing) since `to_html()` always wraps value in open/close tags.
+
+Also in `src/converters.py`:
+- `text_to_children(text)` converts inline markdown text into a list of child HTML nodes by using `text_to_textnodes` then `text_node_to_html_node`.
+- `markdown_to_html_node(markdown)` renders a full markdown document to a single `ParentNode("div", ...)`, mapping block types to HTML tags:
+	- paragraph -> `p`
+	- heading -> `h1`-`h6`
+	- code -> `pre > code` (no inline parsing inside code)
+	- quote -> `blockquote`
+	- unordered list -> `ul > li`
+	- ordered list -> `ol > li`
 
 ## split_nodes_delimiter — `src/inline_markdown.py`
 
