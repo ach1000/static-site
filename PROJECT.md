@@ -127,3 +127,20 @@ A subclass of `HTMLNode` representing an HTML tag with no children (a leaf in th
 - Otherwise returns `<tag props>value</tag>`, e.g. `<a href="...">Click me!</a>`
 
 **`__repr__()`** returns `LeafNode(tag, value, props)` (no children field).
+
+## ParentNode — `src/htmlnode.py`
+
+A subclass of `HTMLNode` representing an HTML tag that contains child nodes.
+
+**Constructor:** `ParentNode(tag, children, props=None)`
+- `tag` and `children` are required positional arguments
+- `value` is always `None` (not accepted)
+- `children` must be a non-empty list of `HTMLNode` instances
+
+**`to_html()` behaviour:**
+- Raises `ValueError` if `tag` is `None`
+- Raises `ValueError` if `children` is missing or empty
+- Recursively calls `to_html()` on each child, concatenating results between the opening and closing tags
+- e.g. `<p><b>Bold</b>Normal text</p>`
+
+**`__repr__()`** returns `ParentNode(tag, children, props)`.
