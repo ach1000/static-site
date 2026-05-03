@@ -99,7 +99,7 @@ Intermediate representation of a piece of inline text.
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
 - The pipeline so far is: Markdown text → `TextNode` (intermediate repr) → `LeafNode` (HTML repr) → rendered HTML string.
-- As of the end of this session, `make test` runs 46 tests, all passing.
+- As of the end of this session, `make test` runs 51 tests, all passing.
 
 ## HTMLNode — `src/htmlnode.py`
 
@@ -177,3 +177,7 @@ Behavior:
 - Raises `ValueError` if a closing delimiter is missing (invalid markdown syntax).
 
 This is the shared parser primitive for inline code, bold, and italic handling by varying only `delimiter` and `text_type`.
+
+Also in `src/inline_markdown.py`:
+- `extract_markdown_images(text)` uses regex to return image tuples as `(alt_text, url)` for markdown image syntax `![alt](url)`.
+- `extract_markdown_links(text)` uses regex to return link tuples as `(anchor_text, url)` for markdown link syntax `[text](url)` and excludes image syntax.
