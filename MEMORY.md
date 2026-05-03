@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-This is a static site generator written in Python. It parses Markdown text and outputs HTML. Development is ongoing; only inline text parsing has been implemented so far.
+This is a static site generator written in Python. It parses Markdown text and outputs HTML.
 
 ## Project Structure
 
@@ -27,7 +27,13 @@ static-site/
 ├── Makefile                 # `make run` / `make test` / `make clean`
 ├── template.html            # Page template containing {{ Title }} and {{ Content }}
 ├── content/
-│   └── index.md             # Markdown source for main page
+│   ├── index.md             # Markdown source for main page
+│   ├── blog/
+│   │   ├── glorfindel/index.md
+│   │   ├── tom/index.md
+│   │   └── majesty/index.md
+│   └── contact/
+│       └── index.md
 └── MEMORY.md                # This file
 ```
 
@@ -187,11 +193,14 @@ Also in `src/converters.py`:
 - `copy_static_to_public()` builds repo-root-relative paths, verifies required assets exist (`static/index.css` and `static/images/tolkien.png`), deletes `public/` if it exists, and recursively copies all static files/directories.
 - `copy_dir_recursive(src, dst)` handles nested directory traversal and logs each copied file path.
 - `public/` is git-ignored as generated output.
+- Current static image set includes `tolkien.png`, `glorfindel.png`, `tom.png`, and `rivendell.png` in `static/images/`.
 
 Also in `src/main.py`:
 - `extract_title(markdown)` returns the first h1 (`# `) title text and raises `ValueError` if none exists.
 - `generate_page(from_path, template_path, dest_path)` converts markdown to HTML using `markdown_to_html_node`, injects values into `template.html` placeholders, and writes output HTML, creating destination directories as needed.
 - `main()` now copies static assets and generates `public/index.html` from `content/index.md` and `template.html`.
+
+Note: Additional markdown pages under `content/blog/*/index.md` and `content/contact/index.md` are present, but current `main()` only generates the home page (`public/index.html`).
 
 `main.sh` now runs the generator and then starts a local server with `cd public && python3 -m http.server 8888`.
 
