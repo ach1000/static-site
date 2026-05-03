@@ -68,14 +68,28 @@ def generate_page(from_path, template_path, dest_path):
         output_file.write(page_content)
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for entry in os.listdir(dir_path_content):
+        from_path = os.path.join(dir_path_content, entry)
+        dest_path = os.path.join(dest_dir_path, entry)
+
+        if os.path.isfile(from_path) and from_path.endswith(".md"):
+            dest_file_path = f"{os.path.splitext(dest_path)[0]}.html"
+            generate_page(from_path, template_path, dest_file_path)
+            continue
+
+        if os.path.isdir(from_path):
+            generate_pages_recursive(from_path, template_path, dest_path)
+
+
 def main():
     project_root = os.path.dirname(os.path.dirname(__file__))
 
     copy_static_to_public()
-    generate_page(
-        os.path.join(project_root, "content", "index.md"),
+    generate_pages_recursive(
+        os.path.join(project_root, "content"),
         os.path.join(project_root, "template.html"),
-        os.path.join(project_root, "public", "index.html"),
+        os.path.join(project_root, "public"),
     )
 
 
