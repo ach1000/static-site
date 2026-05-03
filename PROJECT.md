@@ -10,25 +10,44 @@ This is a static site generator written in Python. It parses Markdown text and o
 
 ```
 static-site/
-├── public/              # Output / served HTML and CSS
-│   ├── index.html
-│   └── styles.css
 ├── src/
-│   ├── main.py          # Entry point; run via main.sh or `make run`
-│   └── textnode.py      # Inline text representation (TextNode + TextType)
-├── .gitignore           # Ignores __pycache__/
-├── main.sh              # Runs `python3 src/main.py`
-├── Makefile             # `make run` executes main.sh; test target to be added
-└── PROJECT.md            # This file
+│   ├── main.py              # Entry point; run via main.sh or `make run`
+│   ├── textnode.py          # Inline text representation (TextNode + TextType)
+│   └── test_textnode.py     # Unit tests for TextNode
+├── .gitignore               # Ignores __pycache__/
+├── main.sh                  # Runs `python3 src/main.py`
+├── test.sh                  # Runs `python3 -m unittest discover -s src`
+├── Makefile                 # `make run` / `make test`
+└── PROJECT.md                # This file
 ```
 
 ## How to Run
 
 ```bash
-./main.sh
-# or
-make run
+./main.sh   # or: make run
+./test.sh   # or: make test
 ```
+
+## Unit Tests — `src/test_textnode.py`
+
+Tests use Python's built-in `unittest` module. Discovered automatically via:
+
+```bash
+python3 -m unittest discover -s src
+```
+
+Tests are methods on `TestTextNode(unittest.TestCase)`. Current coverage:
+
+| Test | What it checks |
+|------|---------------|
+| `test_eq` | Two identical nodes (no URL) are equal |
+| `test_eq_with_url` | Two identical LINK nodes with the same URL are equal |
+| `test_not_eq_different_text` | Different `text` → not equal |
+| `test_not_eq_different_text_type` | Different `text_type` → not equal |
+| `test_not_eq_different_url` | Different `url` → not equal |
+| `test_url_defaults_to_none` | Omitting `url` sets it to `None` |
+| `test_eq_url_none_vs_none` | Explicit `None` and omitted `url` are equivalent |
+| `test_repr` | `__repr__` output matches expected format |
 
 ## Core Concepts
 
@@ -73,4 +92,3 @@ Intermediate representation of a piece of inline text.
 - `src/main.py` imports from `textnode` using a bare module name; Python must be invoked from within the `src/` directory, or the script must be run via `main.sh` / `make run` (both of which call `python3 src/main.py` from the project root, which adds `src/` to `sys.path` implicitly via the working directory).
 - `__pycache__/` is git-ignored.
 - Block-level elements (headings, paragraphs, lists) are deferred to a later implementation phase.
-- A `test` target in the `Makefile` is planned but not yet implemented.
