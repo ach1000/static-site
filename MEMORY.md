@@ -13,9 +13,11 @@ static-site/
 ├── src/
 │   ├── main.py              # Entry point; run via main.sh or `make run`
 │   ├── textnode.py          # Inline text representation (TextNode + TextType)
-│   ├── htmlnode.py          # HTML node representation (HTMLNode)
+│   ├── htmlnode.py          # HTML node representation (HTMLNode, LeafNode, ParentNode)
+│   ├── converters.py        # text_node_to_html_node() conversion function
 │   ├── test_textnode.py     # Unit tests for TextNode
-│   └── test_htmlnode.py     # Unit tests for HTMLNode
+│   ├── test_htmlnode.py     # Unit tests for HTMLNode / LeafNode / ParentNode
+│   └── test_converters.py   # Unit tests for text_node_to_html_node
 ├── .gitignore               # Ignores __pycache__/
 ├── main.sh                  # Runs `python3 src/main.py`
 ├── test.sh                  # Runs `python3 -m unittest discover -s src`
@@ -144,3 +146,18 @@ A subclass of `HTMLNode` representing an HTML tag that contains child nodes.
 - e.g. `<p><b>Bold</b>Normal text</p>`
 
 **`__repr__()`** returns `ParentNode(tag, children, props)`.
+
+## text_node_to_html_node — `src/converters.py`
+
+Converts a `TextNode` to a `LeafNode`. Raises `ValueError` for unknown `TextType` values.
+
+| TextType  | LeafNode tag | value        | props                          |
+|-----------|-------------|--------------|--------------------------------|
+| TEXT      | `None`      | `text`       | —                              |
+| BOLD      | `"b"`       | `text`       | —                              |
+| ITALIC    | `"i"`       | `text`       | —                              |
+| CODE      | `"code"`    | `text`       | —                              |
+| LINK      | `"a"`       | `text`       | `{"href": url}`                |
+| IMAGE     | `"img"`     | `""`         | `{"src": url, "alt": text}`    |
+
+Note: `LeafNode` renders images as `<img src="..." alt="..."></img>` (not self-closing) since `to_html()` always wraps value in open/close tags.
