@@ -3,6 +3,7 @@ import unittest
 from inline_markdown import (
     extract_markdown_images,
     extract_markdown_links,
+    markdown_to_blocks,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
@@ -292,6 +293,41 @@ class TestTextToTextNodes(unittest.TestCase):
         text = "This has **broken bold"
         with self.assertRaises(ValueError):
             text_to_textnodes(text)
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_markdown_to_blocks_strips_whitespace(self):
+        md = "  # Heading  \n\n   Paragraph text   "
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["# Heading", "Paragraph text"])
+
+    def test_markdown_to_blocks_removes_empty_blocks(self):
+        md = "\n\n# Heading\n\n\n\nParagraph\n\n\n"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["# Heading", "Paragraph"])
+
+    def test_markdown_to_blocks_empty_input(self):
+        self.assertEqual(markdown_to_blocks("   \n\n   \n"), [])
 
 
 if __name__ == "__main__":
